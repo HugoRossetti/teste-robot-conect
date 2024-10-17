@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste de Conexão WebSocket</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #status {
+      padding: 20px;
+      font-size: 1.5em;
+      color: white;
+      background-color: red;
+    }
+    #log {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 300px;
+      margin: 0 auto;
+      height: 100px;
+      overflow-y: auto;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Teste de Conexão WebSocket com o Robô</h1>
+  <div id="status">Desconectado</div>
+  <div id="log">Log de Mensagens:</div>
+
+  <button onclick="enviarComando('frente')">Mover Frente</button>
+  <button onclick="enviarComando('tras')">Mover Trás</button>
+
+  <script>
+    // Substitua pelo IP ou URL pública do ESP32
+    const ws = new WebSocket('ws://SEU_ENDERECO_IP_PUBLICO_OU_DDNS/ws');
+    const statusDiv = document.getElementById('status');
+    const logDiv = document.getElementById('log');
+
+    // Função para exibir mensagens no log
+    function log(message) {
+      logDiv.innerHTML += message + "<br>";
+      logDiv.scrollTop = logDiv.scrollHeight; // Rolagem automática
+    }
+
+    // Manipuladores de eventos WebSocket
+    ws.onopen = function() {
+      log("Conexão estabelecida");
+      statusDiv.innerHTML = "Conectado";
+      statusDiv.style.backgroundColor = "green";
+    };
+
+    ws.onmessage = function(event) {
+      log("Mensagem recebida: " + event.data);
+    };
+
+    ws.onclose = function() {
+      log("Conexão fechada");
+      statusDiv.innerHTML = "Desconectado";
+      statusDiv.style.backgroundColor = "red";
+    };
+
+    ws.onerror = function(error) {
+      log("Erro na conexão: " + error.message);
+      statusDiv.innerHTML = "Erro";
+      statusDiv.style.backgroundColor = "orange";
+    };
+
+    // Função para enviar comandos ao ESP32
+    function enviarComando(comando) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const msg = JSON.stringify({ comando: comando });
+        ws.send(msg);
+        log("Comando enviado: " + comando);
+      } else {
+        log("Não conectado ao WebSocket");
+      }
+    }
+  </script>
+
+</body>
+</html>
